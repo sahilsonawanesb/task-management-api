@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import AuthRoutes from './routes/auth.route.js';
 
 
 
@@ -15,6 +16,9 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
+
+// auth routes..
+app.use('/api/auth', AuthRoutes);
 
 
 // API for testing.
