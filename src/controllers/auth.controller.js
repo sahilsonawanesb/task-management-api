@@ -1,79 +1,144 @@
 import dotenv from 'dotenv';
 dotenv.config(); 
 import bcryptjs from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 import User from '../models/user.models.js'
 import errorHandler from '../utils/error.js';
-
+import {generateToken, generateRefreshToken} from '../config/jwt.js';
 
 
 // controller function for sign-up
 export const signUp = async(req, res, next) => {
-    const {username, email, password} = req.body;
+    try{
+    const {username, email, password, role} = req.body;
 
     // validation 
     if(!username || !email || !password.trim()){
         return next(errorHandler(400, "All fields are required"));
     }
+     // Check if user already exists
+     const existingUser = await User.findOne({ 
+        $or: [{ email }, { username }] 
+      });
+
+      if(existingUser){
+        if(existingUser.email === email){
+          return next(errorHandler(409, 'Email already in use'));
+        }
+        if(existingUser.username === username){
+          return next(errorHandler(409, 'Username already taken'));
+        }
+      }
 
     // securing and hashing the password.
     const hashPassword = bcryptjs.hashSync(password, 10);
 
-    try{
+  
         // now create the new user as follows
-        const newUser = new User({
+        const user = new User({
             username : username,
             email : email,
-            password : hashPassword
+            password : hashPassword,
+            role: role || 'user'
         });
 
-        await newUser.save();
-        res.json("Sign Up Sucessfull");
+        await user.save();
+
+        // generate tokens;
+        const token = generateToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+
+        res.status(201).json({
+            message : 'User Register Successfully',
+            token,
+            refreshToken,
+            user : {
+                id : user._id,
+                username : user.username,
+                email : user.email,
+                role: user.role
+            }
+
+        })
 
     }catch(error){
         next(error);
     }
 }
 
-// controller function for sign-in
+// controller function for sign-In
+
 export const signIn = async(req, res, next) => {
-    const {email, password} = req.body;
-
-    // first validate the feilds
-    if(!email || !password || email.trim() === '' || password.trim() === ''){
-        next(errorHandler(400, 'All feilds are required'));
-    }
-
     try{
-        // validate the user.
+        const {email, password} = req.body;
+
+        // first validate the fields
+        if(!email || !password || email.trim() === '' || password.trim() === ''){
+            return next(errorHandler(400, 'All fields are required'));
+        }
+
+        // validate the user
         const validUser = await User.findOne({email});
      
         if (!validUser) {
             return next(errorHandler(400, 'User not found'));
         }
       
-        
-
         // validate the password
         const validPassword = bcryptjs.compareSync(password, validUser.password);
         if (!validPassword) {
             return next(errorHandler(400, 'Invalid password'));
         }
 
-        // JWT token
-        const token = jwt.sign({id : validUser?._id, role : validUser.role}, process.env.JWT_SECRET);
+        // Generate tokens
+        const token = generateToken(validUser);
+        const refreshToken = generateRefreshToken(validUser);
 
-        // seperation and hiding the password from the enduserl
-        const {password : pass, ...rest} = validUser._doc;
+        // Hide password from response
+        const {password: pass, ...rest} = validUser._doc;
 
-        res.status(200).cookie('access_token', token, {
-            httpOnly : true
-         }).json(rest);
-    }catch(error){
+        // Set cookies first
+        res.cookie('access_token', token, {
+            httpOnly: true
+        });
+        
+        res.cookie('refresh_token', refreshToken, {
+            httpOnly: true
+        });
+
+        // Then send a single response
+        return res.status(200).json({
+            message: 'Login Successful',
+            ...rest
+        });
+    } catch(error) {
         next(error);
     }
 }
 
-export default {signUp, signIn};
+
+// controller function for getting current user details
+export const getCurrentUser = async(req, res, next) => {
+    try{
+
+        const user = await User.findById(req.user.id);
+
+        res.status(200).json({
+            user : {
+                id : user._id,
+                username : user.username,
+                email : user.email,
+                role : user.role,
+                createdAt : user.createdAt,
+                updatedAt : user.updateAt
+            }
+        });
+
+    }catch(error){
+        next(error);
+    }
+}
+export default {signUp, signIn, getCurrentUser};
 
 

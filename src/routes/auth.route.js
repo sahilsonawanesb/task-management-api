@@ -1,5 +1,6 @@
 import express from 'express';
-import {signUp, signIn} from '../controllers/auth.controller.js';
+import {signUp, signIn, getCurrentUser} from '../controllers/auth.controller.js';
+import {authenticate} from '../middlewares/auth.js';
 
 
 // create the auth route
@@ -8,5 +9,8 @@ const router = express.Router();
 // signUp and SignIn route
 router.post('/sign-up', signUp);
 router.post('/sign-in', signIn);
+
+// user-details
+router.get('/getUser', authenticate, getCurrentUser);
 
 export default router;
