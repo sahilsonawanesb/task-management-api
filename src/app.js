@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import AuthRoutes from './routes/auth.route.js';
 import TaskRoutes from './routes/task.route.js';
+import NotificationRoutes from './routes/notification.route.js';
 
 
 
@@ -25,6 +26,9 @@ app.use('/api/auth', AuthRoutes);
 
 // tasks routes..
 app.use('/api/task', TaskRoutes);
+
+// notification routes..
+app.use('/api/notifications', NotificationRoutes);
 
 // API for testing.
 app.get("/", (req, res) => {

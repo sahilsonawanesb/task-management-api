@@ -48,9 +48,15 @@ export const authorize = (...roles) => {
 }
 
 export const authorizeAdmin = (req, res, next) => {
-  if(req.user.id !== 'admin'){
-    return res.status(400).json({message : 'You are not allowed to perform this action'});
+
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
   }
-}
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'You are not allowed to perform this action' });
+  }
+
+  next();
+};
 
 export default {authenticate, authorize, authorizeAdmin};

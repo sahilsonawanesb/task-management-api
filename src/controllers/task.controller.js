@@ -1,4 +1,5 @@
 import Task from '../models/tasks.models.js';
+import {createNotification} from '../services/notificationservice.js'
 
 
 
@@ -24,6 +25,15 @@ export const createTask = async(req, res, next) => {
         })
 
         await task.save();
+
+        if(assignedTo.toString() !== req.user.id.toString()){
+            await createNotification(
+                assignedTo,
+                task._id,
+                'task_assigned',
+                `A new task "${title}" has been assigned to you by ${req.user.username}`
+              );
+        }
         res.status(201).json({
             message : "Task created successfully", task
         });
@@ -78,6 +88,24 @@ export const updateTasks = async(req, res, next) => {
         }
 
         const updateTask = await Task.findByIdAndUpdate(id, req.body, {new : true});
+
+        if(updateTask.assignedTo && task.assignedTo.toString() !== updateTask.assignedTo.toString()){
+            await createNotification(
+                assignedTo,
+                task._id,
+                'task_assigned',
+                 `Task "${task.title}" has been reassigned to you by ${req.user.username}`
+            )
+        }
+
+        if (updateTask.title || updateTask.description || updateTask.dueDate) {
+            await createNotification(
+              task.assignedTo,
+              task._id,
+              'task_updated',
+              `Task "${task.title}" has been updated by ${req.user.username}`
+            );
+          }
 
         res.status(200).json({
             message : "Task updated sucessfully",
@@ -145,6 +173,15 @@ export const updateTaskStatus = async(req, res, next) => {
 
         task.status = status;
         await task.save();
+
+        await createNotification(
+            task.assignedTo,
+            task._id,
+            'status_change',
+            `Task "${task.title}" status changed to "${status}" by ${req.user.username}`
+          );
+
+          console.log(`Task ${id} status updated to ${status} by user ${userId}`);
 
         res.status(200).json({message : 'Task status update successfull', task});
     }catch(error){
