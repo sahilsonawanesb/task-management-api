@@ -1,4 +1,5 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
+
 
 
 const TaskSchema = new mongoose.Schema({
@@ -33,10 +34,6 @@ const TaskSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : 'User',
         required : true,
-    },
-    isDeleted : {
-        type : Boolean,
-        default : false,
     }
 }, {
     timestamps : true
