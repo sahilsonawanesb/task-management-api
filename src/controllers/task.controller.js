@@ -1,5 +1,6 @@
 import Task from '../models/tasks.models.js';
 import {createNotification} from '../services/notificationservice.js'
+import TaskLogService from '../services/taskLogService.js'
 
 
 
@@ -191,6 +192,59 @@ export const updateTaskStatus = async(req, res, next) => {
         })
     }
 
+}
+
+// controller function for getting the task..
+export const getTaskLog = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(400).json({ error: "Task ID is required" });
+        }
+
+        const logs = await TaskLogService.getTaskLogs(
+            id,
+            parseInt(req.query.limit) || 20,
+            parseInt(req.query.skip) || 0
+        );
+
+        if (!logs.length) {
+            return res.status(404).json({ message: "No logs found for this task" });
+        }
+
+        res.status(200).json({ logs });
+    } catch (error) {
+      
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const getUserLog = async(req, res, next) => {
+    try{
+        const {id} = req.params;
+        console.log(id);
+        if(!id){
+            return res.status(400).json({error : 'User not found'});
+        }
+
+        const logs = await TaskLogService.getUserActionLogs(
+            id,
+            parseInt(req.query.limit) || 20,
+            parseInt(req.query.skip) || 0,
+        )
+
+        if(!logs.length){
+            return res.status(400).json({messgae : 'No logs foound for this user'});
+        }
+
+     res.status(200).json({logs})
+     
+
+    }catch(error){
+        res.status(500).json({
+            error : error.message
+        })
+    }
 }
 
 
