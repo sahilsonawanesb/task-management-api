@@ -38,6 +38,10 @@ const TaskSchema = new mongoose.Schema({
 }, {
     timestamps : true
 })
+// Index for faster queries
+TaskSchema.index({ createdBy: 1, createdAt: -1 });
+TaskSchema.index({ assignedTo: 1, createdAt: -1});
+TaskSchema.index({ dueDate: 1, status: 1, createdAt: -1});
 
 const Task = mongoose.model('Task', TaskSchema);
 export default Task;

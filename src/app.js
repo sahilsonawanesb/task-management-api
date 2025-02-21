@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import AuthRoutes from './routes/auth.route.js';
 import TaskRoutes from './routes/task.route.js';
 import NotificationRoutes from './routes/notification.route.js';
+import UserRoutes from './/routes/user.route.js';
 
 
 
@@ -23,6 +24,9 @@ app.use(cookieParser());
 
 // auth routes..
 app.use('/api/auth', AuthRoutes);
+
+// users route..
+app.use('/api/user', UserRoutes);
 
 // tasks routes..
 app.use('/api/task', TaskRoutes);

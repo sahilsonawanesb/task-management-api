@@ -68,7 +68,6 @@ export const signUp = async(req, res, next) => {
 }
 
 // controller function for sign-In
-
 export const signIn = async(req, res, next) => {
     try{
         const {email, password} = req.body;
@@ -117,6 +116,15 @@ export const signIn = async(req, res, next) => {
     }
 }
 
+// controller function for signout
+export const signOut = async(req, res, next) => {
+    try{
+        res.clearCookie('access_token').status(200).json("User has been sign-out");
+    }catch(error){
+        res.status(500).json({error : error.message});
+    }
+}
+
 
 // controller function for getting current user details
 export const getCurrentUser = async(req, res, next) => {
@@ -139,6 +147,6 @@ export const getCurrentUser = async(req, res, next) => {
         next(error);
     }
 }
-export default {signUp, signIn, getCurrentUser};
+export default {signUp, signIn, getCurrentUser, signOut};
 
 
