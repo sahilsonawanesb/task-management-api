@@ -27,7 +27,7 @@ The Task Management API is a RESTful service that allows users to create, read, 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/task-management-api.git
+git clone https://github.com/sahilsonawanesb/task-management-api.git
 
 # Navigate to the project directory
 cd task-management-api
@@ -39,14 +39,15 @@ npm install
 cp .env.example .env
 
 # Edit the .env file with your configuration
+# PORT=3000
 # MONGODB_URI=mongodb://localhost:27017/task-management
 # JWT_SECRET=your_jwt_secret
-# PORT=3000
+JWT_REFRESH_EXPIRATION=7d
 
 # Start the server
-npm start
+npm start or
+npx nodemon 
 ```
-
 ## Authentication
 
 The API uses JSON Web Tokens (JWT) for authentication. All authenticated endpoints require a valid token in the Authorization header.
@@ -54,40 +55,36 @@ The API uses JSON Web Tokens (JWT) for authentication. All authenticated endpoin
 ### Register a New User
 
 ```
-POST /api/auth/register
+POST /api/auth/sign-up
 ```
-
 Request Body:
 ```json
 {
   "username": "johndoe",
   "email": "john@example.com",
   "password": "securePassword123",
-  "name": "John Doe"
 }
 ```
 
 Response (201 Created):
 ```json
 {
-  "message": "User registered successfully",
-  "user": {
-    "_id": "60a1c2b3d4e5f6a7b8c9d0e1",
-    "username": "johndoe",
-    "email": "john@example.com",
-    "name": "John Doe",
-    "createdAt": "2023-05-13T12:34:56.789Z"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "message": "User Register Successfully",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...iJrt7XDGHAvVtbaH8GRzbiJHUwmCJfr2Q1zKM",
+    "user": {
+        "id": "67b88870b453c6687039c65e",
+        "username": "johndoe",
+        "email": "john@example.com",
+        "role": "securePassword123"
+    }
 }
 ```
 
 ### Login
 
 ```
-POST /api/auth/login
+POST /api/auth/sign-in
 ```
-
 Request Body:
 ```json
 {
@@ -99,14 +96,15 @@ Request Body:
 Response (200 OK):
 ```json
 {
-  "message": "Login successful",
-  "user": {
-    "_id": "60a1c2b3d4e5f6a7b8c9d0e1",
+    "message": "Login Successful",
+    "_id": "67b6d244d8a7a413..",
     "username": "johndoe",
     "email": "john@example.com",
-    "name": "John Doe"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "role": "user",
+    "isActive": true,
+    "createdAt": "....",
+    "updatedAt": "....",
+    "__v": 0
 }
 ```
 
@@ -118,124 +116,72 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### Create a Task
-
 ```
-POST /api/task
+POST /api/task/create
 ```
 
 Request Body:
 ```json
 {
-  "title": "Complete API documentation",
-  "description": "Write comprehensive documentation for the Task Management API",
-  "dueDate": "2023-06-01T12:00:00.000Z",
-  "priority": "high",
-  "status": "in_progress",
-  "tags": ["documentation", "api"]
+    "title" : "Complete Task Application5",
+    "description" : "Implment Authentication, task management and creation",
+    "dueDate" : "2025-02-28T00:00:00Z",
+    "assignedTo" : "67b6d244d8a7a413ce1,...a"
 }
 ```
 
 Response (201 Created):
 ```json
 {
-  "message": "Task created successfully",
-  "task": {
-    "_id": "61b2c3d4e5f6a7b8c9d0e1f2",
-    "title": "Complete API documentation",
-    "description": "Write comprehensive documentation for the Task Management API",
-    "dueDate": "2023-06-01T12:00:00.000Z",
-    "priority": "high",
-    "status": "in_progress",
-    "tags": ["documentation", "api"],
-    "createdBy": "60a1c2b3d4e5f6a7b8c9d0e1",
-    "createdAt": "2023-05-14T10:11:12.134Z",
-    "updatedAt": "2023-05-14T10:11:12.134Z"
-  }
+    "message": "Task created successfully",
+    "task": {
+        "title": "Complete Task Application5",
+        "description": "Implment Authentication, task management and creation",
+        "status": "Pending",
+        "dueDate": "2025-02-28T00:00:00.000Z",
+        "assignedTo": "67b6d244d8a.....",
+        "createdBy": "67b6cf8341....",
+        "_id": "67b88935b453c6687039c664",
+        "createdAt": "2025-02-21T14:09:57.029Z",
+        "updatedAt": "2025-02-21T14:09:57.029Z",
+        "__v": 0
+    }
 }
 ```
 
-### Get All Tasks
+### Get All & user Specific Tasks
 
 ```
-GET /api/task
+GET /api/task/getTask
 ```
-
-Parameters:
-- `page` (optional, default: 1): Page number for pagination
-- `limit` (optional, default: 10): Number of items per page
-- `status` (optional): Filter by status (pending, in_progress, completed)
-- `priority` (optional): Filter by priority (low, medium, high)
-- `sortBy` (optional): Field to sort by (createdAt, dueDate, priority)
-- `sortOrder` (optional, default: desc): Sort order (asc, desc)
-- `search` (optional): Search term to filter tasks by title or description
-
-Example:
-```
-GET /api/task?page=1&limit=10&status=in_progress&priority=high&sortBy=dueDate&sortOrder=asc
-```
-
 Response (200 OK):
 ```json
-{
-  "tasks": [
-    {
-      "_id": "61b2c3d4e5f6a7b8c9d0e1f2",
-      "title": "Complete API documentation",
-      "description": "Write comprehensive documentation for the Task Management API",
-      "dueDate": "2023-06-01T12:00:00.000Z",
-      "priority": "high",
-      "status": "in_progress",
-      "tags": ["documentation", "api"],
-      "createdBy": {
-        "_id": "60a1c2b3d4e5f6a7b8c9d0e1",
-        "name": "John Doe"
-      },
-      "createdAt": "2023-05-14T10:11:12.134Z",
-      "updatedAt": "2023-05-14T10:11:12.134Z"
+  {
+        "_id": "67b7626434289b317cf8aee8",
+        "title": "Complete Notification System for Task management",
+        "description": "Implment Notification system for creation, task management and creation",
+        "status": "Completed",
+        "dueDate": "2025-02-28T00:00:00.000Z",
+        "assignedTo": {
+            "_id": "67b6d244d8a7a413ce190eca",
+            "username": "johndoe",
+            "email": "johndoe@gmail.com"
+        },
+        "createdBy": {
+            "_id": "67b6cf8341a31e1fec086dd6",
+            "username": "johndoe",
+            "email": "johndoe@gmail.com"
+        },
+        "createdAt": "2025-02-20T17:12:04.350Z",
+        "updatedAt": "2025-02-20T17:20:35.792Z",
+        "__v": 0
     },
-    // More tasks...
-  ],
-  "pagination": {
-    "totalTasks": 45,
-    "totalPages": 5,
-    "currentPage": 1,
-    "limit": 10
-  }
-}
 ```
 
-### Get Task by ID
+### Update Task by ID
 
 ```
-GET /api/task/:id
-```
-
-Response (200 OK):
-```json
-{
-  "task": {
-    "_id": "61b2c3d4e5f6a7b8c9d0e1f2",
-    "title": "Complete API documentation",
-    "description": "Write comprehensive documentation for the Task Management API",
-    "dueDate": "2023-06-01T12:00:00.000Z",
-    "priority": "high",
-    "status": "in_progress",
-    "tags": ["documentation", "api"],
-    "createdBy": {
-      "_id": "60a1c2b3d4e5f6a7b8c9d0e1",
-      "name": "John Doe",
-      "email": "john@example.com"
-    },
-    "createdAt": "2023-05-14T10:11:12.134Z",
-    "updatedAt": "2023-05-14T10:11:12.134Z"
-  }
-}
-```
-
-### Update a Task
-
-```
-PUT /api/task/:id
+PUT /api/task/updateTask/:id
 ```
 
 Request Body (include only fields to update):
@@ -249,19 +195,19 @@ Request Body (include only fields to update):
 Response (200 OK):
 ```json
 {
-  "message": "Task updated successfully",
-  "task": {
-    "_id": "61b2c3d4e5f6a7b8c9d0e1f2",
-    "title": "Complete API documentation",
-    "description": "Updated description with additional details",
-    "dueDate": "2023-06-01T12:00:00.000Z",
-    "priority": "high",
-    "status": "completed",
-    "tags": ["documentation", "api"],
-    "createdBy": "60a1c2b3d4e5f6a7b8c9d0e1",
-    "createdAt": "2023-05-14T10:11:12.134Z",
-    "updatedAt": "2023-05-15T09:08:07.654Z"
-  }
+    "message": "Task updated sucessfully",
+    "updateTask": {
+        "_id": "67b7723b46d9c33061412f57",
+        "title": "Complete Task Application",
+        "description": "Complete Authentication, task management and creation",
+        "status": "In Progress",
+        "dueDate": "2025-02-28T00:00:00.000Z",
+        "assignedTo": "67b6d244d8a7a413ce190eca",
+        "createdBy": "67b6cf8341a31e1fec086dd6",
+        "createdAt": "2025-02-20T18:19:39.114Z",
+        "updatedAt": "2025-02-21T14:16:08.220Z",
+        "__v": 0
+    }
 }
 ```
 
@@ -281,22 +227,27 @@ Request Body:
 Response (200 OK):
 ```json
 {
-  "message": "Task status updated successfully",
-  "task": {
-    "_id": "61b2c3d4e5f6a7b8c9d0e1f2",
-    "title": "Complete API documentation",
-    "status": "completed",
-    "updatedAt": "2023-05-15T09:10:11.123Z"
-  }
+    "message": "Task status update successfull",
+    "task": {
+        "_id": "67b7723b46d9c33061412f57",
+        "title": "Complete Task Application",
+        "description": "Complete Authentication, task management and creation",
+        "status": "Completed",
+        "dueDate": "2025-02-28T00:00:00.000Z",
+        "assignedTo": "67b6d244d8a7a413ce190eca",
+        "createdBy": "67b6cf8341a31e1fec086dd6",
+        "createdAt": "2025-02-20T18:19:39.114Z",
+        "updatedAt": "2025-02-21T14:17:01.968Z",
+        "__v": 0
+    }
 }
 ```
 
 ### Delete a Task
 
 ```
-DELETE /api/task/:id
+DELETE /api/task/deteleTask/:id
 ```
-
 Response (200 OK):
 ```json
 {
@@ -357,28 +308,57 @@ Response (200 OK):
 ]
 ```
 
+## API Reference
+
+### Authentication Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /api/auth/sign-up | Register a new user |
+| POST | /api/auth/sign | Authenticate a user |
+| POST | /api/auth/signout | Logout a user |
+| GET | /api/auth/getUser | Get current user profile |
+
+### Task Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/task/getTask | Get all tasks |
+| POST | /api/task/create | Create a new task |
+| PUT | /api/task/updateTask/:id | Update a task |
+| DELETE | /api/task/deleteTask/:id | Delete a task |
+| PUT | /api/task/:id/status | Update task status |
+| GET | /api/task/:id/logs | Get task activity logs |
+
+### User Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/user/getUsers | Get all users (admin only) |
+| PUT | /api/user/update/:id | Update user |
+| DELETE | /api/user/delete/:id | Delete user (admin only) |
+| GET | /api/task/getTask | Get tasks for a specific user |
+
+### Notification Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/notifications/ | Get all notifications (user only) |
+| PATCH | /api/notifications/read-all | Read All notification |
+| PATCH | /api/notifications/:id/read | Read Specific notification (admin only) |
+
+### Logs Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/user/:id/logs | Get User Action Logs  |
+| GET | /api/task/:id/logs | Get Task Logs |
+
+
+
 ## Error Handling
 
 The API uses consistent error responses with appropriate HTTP status codes:
-
-### Common Error Responses
-
-#### Invalid Request (400 Bad Request)
-```json
-{
-  "message": "Invalid request",
-  "errors": [
-    {
-      "param": "email",
-      "message": "Valid email is required"
-    },
-    {
-      "param": "password",
-      "message": "Password must be at least 8 characters"
-    }
-  ]
-}
-```
 
 #### Authentication Error (401 Unauthorized)
 ```json
@@ -432,11 +412,7 @@ The API implements several performance optimizations:
 2. **Query Optimization**:
    - Selective field projection
    - Lean queries where appropriate
-   - Efficient pagination
 
-3. **Caching**:
-   - Cache headers for appropriate responses
-   - In-memory caching for frequently accessed data
 
 ## Security Measures
 
@@ -444,7 +420,6 @@ The API implements the following security measures:
 
 1. **Authentication**:
    - JWT-based authentication
-   - Token expiration and refresh mechanisms
    - Secure cookie options
 
 2. **Authorization**:
@@ -459,49 +434,4 @@ The API implements the following security measures:
    - IP-based rate limiting
    - User-based rate limiting for authenticated requests
 
-5. **Security Headers**:
-   - CORS configuration
-   - Content Security Policy
-   - XSS Protection
-   - HTTP Strict Transport Security
 
-## API Reference
-
-### Authentication Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/auth/register | Register a new user |
-| POST | /api/auth/login | Authenticate a user |
-| POST | /api/auth/logout | Logout a user |
-| POST | /api/auth/refresh-token | Refresh JWT token |
-| GET | /api/auth/me | Get current user profile |
-
-### Task Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/task | Get all tasks (with filtering) |
-| POST | /api/task | Create a new task |
-| GET | /api/task/:id | Get a task by ID |
-| PUT | /api/task/:id | Update a task |
-| DELETE | /api/task/:id | Delete a task |
-| PUT | /api/task/:id/status | Update task status |
-| GET | /api/task/:id/logs | Get task activity logs |
-
-### User Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/user | Get all users (admin only) |
-| GET | /api/user/:id | Get user by ID |
-| PUT | /api/user/:id | Update user |
-| DELETE | /api/user/:id | Delete user (admin only) |
-| GET | /api/user/:id/tasks | Get tasks for a specific user |
-
-### System Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /api/system/health | System health check |
-| GET | /api/system/stats | System statistics (admin only) |
